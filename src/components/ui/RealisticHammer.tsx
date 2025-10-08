@@ -7,6 +7,8 @@ interface RealisticHammerProps {
   index?: number;
   token?: string;
   onClick?: () => void;
+  isMatched?: boolean;
+  isMismatch?: boolean;
 }
 
 // Demo Component showing multiple hammers
@@ -16,6 +18,8 @@ export const RealisticHammer: React.FC<RealisticHammerProps> = ({
   index = 0,
   token,
   onClick,
+  isMatched,
+  isMismatch,
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -28,8 +32,16 @@ export const RealisticHammer: React.FC<RealisticHammerProps> = ({
     if (onClick) onClick();
   };
 
+  const getBorderColor = () => {
+    if (isMatched) return "border-green-500";
+    if (isMismatch) return "border-red-500";
+    return "border-gray-700/50 hover:border-purple-500/50";
+  };
+
   return (
-    <div className="relative flex flex-col items-center p-4 bg-gray-900/40 rounded-lg border border-gray-700/50 hover:border-purple-500/50 transition-all hover:bg-gray-900/60 group">
+    <div
+      className={`relative flex flex-col items-center p-4 bg-gray-900/40 rounded-lg border-2 ${getBorderColor()} transition-all hover:bg-gray-900/60 group`}
+    >
       {/* Hammer Visual */}
       <motion.div
         className="relative w-16 h-20 mb-3"
@@ -96,26 +108,6 @@ export const RealisticHammer: React.FC<RealisticHammerProps> = ({
               {token}
             </div>
           </div>
-
-          {/* Copy Button */}
-          <motion.button
-            onClick={handleCopy}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600/80 hover:bg-purple-500 text-white text-xs rounded font-medium transition-colors opacity-0 group-hover:opacity-100"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {copied ? (
-              <>
-                <Check className="w-3 h-3" />
-                Copied!
-              </>
-            ) : (
-              <>
-                <Copy className="w-3 h-3" />
-                Copy
-              </>
-            )}
-          </motion.button>
         </div>
       )}
     </div>

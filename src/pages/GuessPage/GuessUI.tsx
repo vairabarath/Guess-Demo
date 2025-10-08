@@ -73,6 +73,11 @@ const GuessUI: React.FC<GuessUIProps> = ({
     navigator.clipboard.writeText(text);
   };
 
+  // Check if both hashes are valid (exactly 64 characters excluding "0x")
+  const isActualHashValid = actualHash.replace("0x", "").length === 64;
+  const isSecretHashValid = secretHash.replace("0x", "").length === 64;
+  const canSubmit = isActualHashValid && isSecretHashValid && !isSubmitting;
+
   return (
     <div className="min-h-screen bg-gray-950 p-4 sm:p-8 font-mono">
       <div className="max-w-4xl lg:max-w-7xl mx-auto space-y-6 lg:space-y-12">
@@ -108,13 +113,6 @@ const GuessUI: React.FC<GuessUIProps> = ({
           >
             NEW GUESS PROTOCOL
           </motion.h1>
-          <motion.div
-            className="text-xl sm:text-2xl text-purple-300 font-semibold"
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            GUESS ID: #{guessId}
-          </motion.div>
         </motion.div>
 
         {/* Form Sections */}
@@ -205,21 +203,53 @@ const GuessUI: React.FC<GuessUIProps> = ({
             </h2>
             {/* Actual Hash, Secret Hash, Dummy Hash inputs */}
             <div className="space-y-6">
+              {/* ACTUAL HASH */}
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
-                  ACTUAL HASH
-                </label>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <input
-                    type="text"
-                    value={actualHash}
-                    onChange={(e) => onActualHashChange(e.target.value)}
-                    placeholder="Enter 64-char hex or generate"
-                    disabled={isFormReadonly}
-                    className={`flex-1 px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 transition-all text-sm ${
-                      isFormReadonly ? "opacity-50 cursor-not-allowed" : ""
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-white">
+                    ACTUAL HASH
+                  </label>
+                  <span
+                    className={`text-xs font-mono px-2 py-1 rounded ${
+                      actualHash.replace("0x", "").length === 64
+                        ? "bg-green-600/20 text-green-400 border border-green-500/30"
+                        : actualHash.replace("0x", "").length > 64
+                          ? "bg-red-600/20 text-red-400 border border-red-500/30"
+                          : "bg-gray-700/50 text-gray-400"
                     }`}
-                  />
+                  >
+                    {actualHash.replace("0x", "").length}/64
+                  </span>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1">
+                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-mono text-sm pointer-events-none">
+                      0x
+                    </span>
+                    <input
+                      type="text"
+                      value={
+                        actualHash.startsWith("0x")
+                          ? actualHash.slice(2)
+                          : actualHash
+                      }
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Remove any existing 0x and add it back
+                        const cleanValue = value.replace(/^0x/i, "");
+                        onActualHashChange("0x" + cleanValue);
+                      }}
+                      placeholder="Enter 64-char hex or generate"
+                      disabled={isFormReadonly}
+                      className={`w-full pl-10 pr-4 py-3 bg-gray-900 border ${
+                        isActualHashValid
+                          ? "border-green-500/50"
+                          : "border-gray-700"
+                      } rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 transition-all text-sm font-mono ${
+                        isFormReadonly ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                    />
+                  </div>
                   <motion.button
                     onClick={onGenerateActualHash}
                     disabled={isGeneratingActual || isFormReadonly}
@@ -232,21 +262,54 @@ const GuessUI: React.FC<GuessUIProps> = ({
                   </motion.button>
                 </div>
               </div>
+
+              {/* SECRET KEY HASH */}
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
-                  SECRET KEY HASH
-                </label>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <input
-                    type="text"
-                    value={secretHash}
-                    onChange={(e) => onSecretHashChange(e.target.value)}
-                    placeholder="Enter 64-char hex or generate"
-                    disabled={isFormReadonly}
-                    className={`flex-1 px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 transition-all text-sm ${
-                      isFormReadonly ? "opacity-50 cursor-not-allowed" : ""
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-white">
+                    SECRET KEY HASH
+                  </label>
+                  <span
+                    className={`text-xs font-mono px-2 py-1 rounded ${
+                      secretHash.replace("0x", "").length === 64
+                        ? "bg-green-600/20 text-green-400 border border-green-500/30"
+                        : secretHash.replace("0x", "").length > 64
+                          ? "bg-red-600/20 text-red-400 border border-red-500/30"
+                          : "bg-gray-700/50 text-gray-400"
                     }`}
-                  />
+                  >
+                    {secretHash.replace("0x", "").length}/64
+                  </span>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1">
+                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-mono text-sm pointer-events-none">
+                      0x
+                    </span>
+                    <input
+                      type="text"
+                      value={
+                        secretHash.startsWith("0x")
+                          ? secretHash.slice(2)
+                          : secretHash
+                      }
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Remove any existing 0x and add it back
+                        const cleanValue = value.replace(/^0x/i, "");
+                        onSecretHashChange("0x" + cleanValue);
+                      }}
+                      placeholder="Enter 64-char hex or generate"
+                      disabled={isFormReadonly}
+                      className={`w-full pl-10 pr-4 py-3 bg-gray-900 border ${
+                        isSecretHashValid
+                          ? "border-green-500/50"
+                          : "border-gray-700"
+                      } rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 transition-all text-sm font-mono ${
+                        isFormReadonly ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                    />
+                  </div>
                   <motion.button
                     onClick={onGenerateSecretHash}
                     disabled={isGeneratingSecret || isFormReadonly}
@@ -259,17 +322,39 @@ const GuessUI: React.FC<GuessUIProps> = ({
                   </motion.button>
                 </div>
               </div>
+
+              {/* DUMMY HASH */}
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
-                  DUMMY HASH (AUTO-GENERATED)
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-white">
+                    DUMMY HASH (AUTO-GENERATED)
+                  </label>
+                  <span
+                    className={`text-xs font-mono px-2 py-1 rounded ${
+                      dummyHash.replace("0x", "").length === 64
+                        ? "bg-green-600/20 text-green-400 border border-green-500/30"
+                        : "bg-gray-700/50 text-gray-400"
+                    }`}
+                  >
+                    {dummyHash.replace("0x", "").length}/64
+                  </span>
+                </div>
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <input
-                    type="text"
-                    value={dummyHash}
-                    readOnly
-                    className="flex-1 px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-gray-400 cursor-not-allowed text-sm"
-                  />
+                  <div className="relative flex-1">
+                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 font-mono text-sm pointer-events-none">
+                      0x
+                    </span>
+                    <input
+                      type="text"
+                      value={
+                        dummyHash.startsWith("0x")
+                          ? dummyHash.slice(2)
+                          : dummyHash
+                      }
+                      readOnly
+                      className="w-full pl-10 pr-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-gray-400 cursor-not-allowed text-sm font-mono"
+                    />
+                  </div>
                   <motion.button
                     onClick={() => copyToClipboard(dummyHash)}
                     className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
@@ -359,10 +444,14 @@ const GuessUI: React.FC<GuessUIProps> = ({
           {overwrite && (
             <motion.button
               onClick={onSubmit}
-              disabled={isSubmitting}
-              className="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-800 disabled:from-gray-600 text-white rounded-xl font-semibold text-lg flex items-center justify-center gap-3"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              disabled={!canSubmit}
+              className={`px-8 py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transition-all ${
+                canSubmit
+                  ? "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-800 text-white cursor-pointer"
+                  : "bg-gray-600 text-gray-400 cursor-not-allowed opacity-50"
+              }`}
+              whileHover={canSubmit ? { scale: 1.05 } : {}}
+              whileTap={canSubmit ? { scale: 0.95 } : {}}
             >
               {isSubmitting ? (
                 <RefreshCw className="w-5 h-5 animate-spin" />
@@ -376,7 +465,7 @@ const GuessUI: React.FC<GuessUIProps> = ({
           <motion.button
             onClick={onClear}
             disabled={isSubmitting}
-            className="px-8 py-4 bg-gray-600 hover:bg-gray-700 text-white rounded-xl font-semibold text-lg flex items-center justify-center gap-3"
+            className="px-8 py-4 bg-gray-600 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-semibold text-lg flex items-center justify-center gap-3"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -384,6 +473,23 @@ const GuessUI: React.FC<GuessUIProps> = ({
             CLEAR
           </motion.button>
         </motion.div>
+
+        {/* Validation Message */}
+        {!canSubmit && !isSubmitting && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center text-sm text-yellow-400 bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-3"
+          >
+            {!isActualHashValid && !isSecretHashValid
+              ? "⚠️ Both Actual Hash and Secret Hash must be exactly 64 characters to submit"
+              : !isActualHashValid
+                ? "⚠️ Actual Hash must be exactly 64 characters to submit"
+                : !isSecretHashValid
+                  ? "⚠️ Secret Hash must be exactly 64 characters to submit"
+                  : null}
+          </motion.div>
+        )}
       </div>
     </div>
   );
