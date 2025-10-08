@@ -43,7 +43,6 @@ interface GuessUIProps {
 }
 
 const GuessUI: React.FC<GuessUIProps> = ({
-  guessId,
   paidGuess,
   overwrite,
   complex,

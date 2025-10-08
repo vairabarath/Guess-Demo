@@ -134,14 +134,7 @@ const RealisticHammer: React.FC<RealisticHammerProps> = ({
   isMatched = false,
   isMismatch = false,
 }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = () => {
-    if (token) {
-      navigator.clipboard.writeText(token);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+  const handleClick = () => {
     if (onClick) onClick();
   };
 
@@ -153,7 +146,8 @@ const RealisticHammer: React.FC<RealisticHammerProps> = ({
 
   return (
     <div
-      className={`relative flex flex-col items-center p-3 bg-gray-900/40 rounded-lg border-2 ${getBorderColor()} transition-all hover:bg-gray-900/60 group min-h-[140px]`}
+      className={`relative flex flex-col items-center p-3 bg-gray-900/40 rounded-lg border-2 ${getBorderColor()} transition-all hover:bg-gray-900/60 group min-h-[140px] cursor-pointer`}
+      onClick={handleClick}
     >
       <motion.div
         className="relative w-12 h-16 mb-2"
@@ -256,15 +250,7 @@ const TreasureBox: React.FC<TreasureBoxProps> = ({
   isLarge = false,
   isBroken = false,
 }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = () => {
-    const textToCopy = hash || token;
-    if (textToCopy) {
-      navigator.clipboard.writeText(textToCopy);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+  const handleClick = () => {
     if (onClick) onClick();
   };
 
@@ -281,9 +267,10 @@ const TreasureBox: React.FC<TreasureBoxProps> = ({
         )}
 
         <motion.div
-          className="relative w-32 h-32 mb-4"
+          className="relative w-32 h-32 mb-4 cursor-pointer"
           whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 300 }}
+          onClick={handleClick}
         >
           {/* Treasure Box Base */}
           <div
@@ -368,7 +355,8 @@ const TreasureBox: React.FC<TreasureBoxProps> = ({
 
   return (
     <div
-      className={`relative flex flex-col items-center p-3 bg-gradient-to-br from-amber-900/30 to-yellow-900/30 rounded-lg border-2 ${borderColor} transition-all hover:shadow-lg hover:shadow-amber-600/20 group min-h-[140px]`}
+      className={`relative flex flex-col items-center p-3 bg-gradient-to-br from-amber-900/30 to-yellow-900/30 rounded-lg border-2 ${borderColor} transition-all hover:shadow-lg hover:shadow-amber-600/20 group min-h-[140px] cursor-pointer`}
+      onClick={handleClick}
     >
       <motion.div
         className="relative w-12 h-16 mb-2"
@@ -788,7 +776,7 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({
   const [isFetching, setIsFetching] = useState(false);
   const [blockExists, setBlockExists] = useState(false);
   const [realBlockHash, setRealBlockHash] = useState<string>("");
-  const [matchCount, setMatchCount] = useState(0);
+
   const [error, setError] = useState<string>("");
   const [showVideoPopup, setShowVideoPopup] = useState(false);
   const [hasFetched, setHasFetched] = useState(false); // NEW: Track if fetch has been used
@@ -843,20 +831,6 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({
     return matches;
   };
 
-  const calculateTokenMatches = (
-    predictedTokens: string[],
-    actualTokens: string[],
-  ): number => {
-    let matches = 0;
-    const minLength = Math.min(predictedTokens.length, actualTokens.length);
-    for (let i = 0; i < minLength; i++) {
-      if (predictedTokens[i] === actualTokens[i]) {
-        matches++;
-      }
-    }
-    return matches;
-  };
-
   // Helper function to check if a predicted token matches any actual token sequence
   const checkTokenMatchesSequence = (
     predictedToken: string,
@@ -884,8 +858,7 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({
       setRealBlockHash(fetchedHash);
       setBlockExists(true);
 
-      const matches = calculateMatches(guessData.actualHash, fetchedHash);
-      setMatchCount(matches);
+      calculateMatches(guessData.actualHash, fetchedHash);
     } catch (err: any) {
       if (err.message.includes("not found") || err.message.includes("null")) {
         setError(

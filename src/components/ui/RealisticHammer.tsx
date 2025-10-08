@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import { motion, type AnimationControls } from "framer-motion";
-import { Sparkles, Star, Copy, Check } from "lucide-react";
+import { Sparkles, Star } from "lucide-react";
 
 interface RealisticHammerProps {
   animate?: AnimationControls;
@@ -21,14 +21,7 @@ export const RealisticHammer: React.FC<RealisticHammerProps> = ({
   isMatched,
   isMismatch,
 }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = () => {
-    if (token) {
-      navigator.clipboard.writeText(token);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+  const handleClick = () => {
     if (onClick) onClick();
   };
 
@@ -40,7 +33,8 @@ export const RealisticHammer: React.FC<RealisticHammerProps> = ({
 
   return (
     <div
-      className={`relative flex flex-col items-center p-4 bg-gray-900/40 rounded-lg border-2 ${getBorderColor()} transition-all hover:bg-gray-900/60 group`}
+      className={`relative flex flex-col items-center p-4 bg-gray-900/40 rounded-lg border-2 ${getBorderColor()} transition-all hover:bg-gray-900/60 group cursor-pointer`}
+      onClick={handleClick}
     >
       {/* Hammer Visual */}
       <motion.div
